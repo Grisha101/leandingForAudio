@@ -43,6 +43,7 @@ LANGUAGES = {
     "zh": "Chinese",
     "it": "Italian",
     "pt": "Portuguese",
+    "ua": "Ukrainian",
 }
 
 
@@ -171,12 +172,12 @@ def create_gradio_interface():
                     lines=5,
                     max_lines=15
                 )
-                char_count = gr.Markdown("Characters: 0 / 5000")
+                char_count = gr.Markdown("Characters: 0 / 15000")
                 
                 # Real-time character counter
                 def update_char_count(text):
                     count = len(text) if text else 0
-                    return f"Characters: {count} / 5000"
+                    return f"Characters: {count} / 15000"
                 
                 text_input.change(update_char_count, inputs=text_input, outputs=char_count)
                 
@@ -241,41 +242,7 @@ def create_gradio_interface():
         
         # Performance info
         gr.Markdown("""
-        ### 📊 API Integration Information
-        
-        This Gradio app uses **Google Text-to-Speech (gTTS)** by default.
-        
-        **To use with advanced TTS APIs:**
-        
-        1. **ElevenLabs API** (Premium voices):
-           - Sign up at https://elevenlabs.io
-           - Get your API key
-           - Modify `generate_speech()` to use ElevenLabs API
-        
-        2. **OpenAI Text-to-Speech**:
-           - Use your OpenAI API key
-           - Requires `openai` package
-        
-        3. **Azure Speech Services**:
-           - Create account at Microsoft Azure
-           - Use for enterprise-grade TTS
-        
-        ### 📝 Setup Instructions
-        
-        1. **Install required packages:**
-           ```bash
-           pip install gradio gtts pydub scipy
-           pip install pyttsx3  # Optional: offline TTS
-           ```
-        
-        2. **Run this app:**
-           ```bash
-           python tts_gradio_app.py
-           ```
-        
-        3. **For advanced TTS engines, install:**
-           - ElevenLabs: `pip install elevenlabs`
-           - OpenAI: `pip install openai`
+
         """)
         
         # Connect button click
