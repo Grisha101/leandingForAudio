@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech - AI Voice Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #ffffff;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* Particle Canvas Background */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .logo:hover {
+            opacity: 0.8;
+        }
+
+        nav a {
+            color: #ffffff;
+            text-decoration: none;
+            margin: 0 1.5rem;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #667eea;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-login {
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-login:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-signup {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Hero Section */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh;
+            padding: 4rem 5%;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff, #e0e0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: #b0b0ff;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            padding: 1rem 2.5rem;
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: #999;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .badge-star {
+            color: #ffd700;
+        }
+
+        /* Features Section */
+        .section {
+            padding: 5rem 5%;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .section h2 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ffffff, #e0e0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: #b0b0ff;
+            margin-bottom: 3rem;
+            max-width: 600px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateY(-5px);
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .feature-card p {
+            color: #b0b0ff;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Use Cases Section */
+        .use-cases {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .use-case-item {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            padding: 2rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .use-case-item:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.7);
+        }
+
+        .use-case-item h4 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .use-case-item p {
+            color: #a0a0cc;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Languages Section */
+        .languages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .language-badge {
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .language-badge:hover {
+            background: rgba(102, 126, 234, 0.3);
+            border-color: rgba(102, 126, 234, 0.7);
+            transform: scale(1.05);
+        }
+
+        .language-flag {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .language-name {
+            font-size: 0.9rem;
+            color: #b0b0ff;
+        }
+
+        /* Models Section */
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .model-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            padding: 2.5rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .model-card:hover {
+            border-color: rgba(102, 126, 234, 0.8);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .model-card h3 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .model-features {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+
+        .model-features li {
+            padding: 0.5rem 0;
+            color: #b0b0ff;
+            font-size: 0.9rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .model-features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        /* Stats Section */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #b0b0ff;
+            font-size: 0.95rem;
+        }
+
+        /* Footer */
+        footer {
+            padding: 3rem 5%;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2);
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            color: #fff;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .footer-section a {
+            display: block;
+            color: #888;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: #667eea;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem 4%;
+            }
+
+            .hero {
+                min-height: 70vh;
+                padding: 2rem 4%;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .section {
+                padding: 3rem 4%;
+            }
+
+            .features-grid,
+            .models-grid,
+            .languages-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scroll Animation */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Glowing gradient effect */
+        .glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Canvas -->
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="content-wrapper">
+        <!-- Navigation -->
+        <nav>
+            <a href="index.html" class="logo">✨ AI Voice</a>
+            <div style="display: flex; gap: 2rem;">
+                <a href="index.html">Home</a>
+                <a href="tts-demo.html">TTS Demo</a>
+                <a href="voice-library.html">Voice Library</a>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn btn-login" onclick="openTelegramBot()">Telegram</button>
+                <button class="btn btn-signup" onclick="window.location.href='tts-demo.html'">Start Free</button>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="trust-badge">
+                <span class="badge-star">★★★★★</span>
+                <span>Trusted by 1M+ users • Free to start</span>
+            </div>
+            <h1>Text to Speech with Human-Like AI Voices</h1>
+            <p>Create expressive, emotionally intelligent audio with the most advanced AI voice technology</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="window.location.href='tts-demo.html'">Try Now</button>
+                <a href="voice-library.html" class="btn btn-secondary" style="text-decoration: none; color: #667eea;">Explore Voices</a>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="section">
+            <h2>Powerful Features</h2>
+            <p class="section-subtitle">Everything you need to create professional audio content</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎭</div>
+                    <h3>Emotional Control</h3>
+                    <p>Create voices that respond to emotional cues and adapt delivery to match content context</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <h3>70+ Languages</h3>
+                    <p>Generate natural speech in over 70 languages with native-level clarity and emotion</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎤</div>
+                    <h3>Voice Cloning</h3>
+                    <p>Instantly replicate your own voice or design unique AI voices with full control</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Ultra-Low Latency</h3>
+                    <p>Generate speech at lightning speed with 75ms latency for real-time applications</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎬</div>
+                    <h3>Multi-Speaker Dialogue</h3>
+                    <p>Create audio conversations where speakers share context and emotional awareness</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Enterprise Security</h3>
+                    <p>SOC 2, HIPAA, and GDPR compliant with EU Data Residency options</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Use Cases Section -->
+        <section class="section">
+            <h2>Perfect For</h2>
+            <p class="section-subtitle">Trusted by creators, developers, and enterprises</p>
+            <div class="use-cases">
+                <div class="use-case-item">
+                    <h4>🤖 AI Agents</h4>
+                    <p>Create natural, human-like voices for chatbots and virtual assistants</p>
+                </div>
+                <div class="use-case-item">
+                    <h4>📚 Audiobooks</h4>
+                    <p>Convert written content into professional audiobooks in minutes</p>
+                </div>
+                <div class="use-case-item">
+                    <h4>🎮 Gaming</h4>
+                    <p>Generate character voices and voiceovers with emotional accuracy</p>
+                </div>
+                <div class="use-case-item">
+                    <h4>🎥 Video Production</h4>
+                    <p>Add professional voiceovers to videos, TV shows, and animations</p>
+                </div>
+                <div class="use-case-item">
+                    <h4>🎙️ Podcasts</h4>
+                    <p>Create podcasts with consistent, professional narration</p>
+                </div>
+                <div class="use-case-item">
+                    <h4>♿ Accessibility</h4>
+                    <p>Make content accessible with high-quality text-to-speech solutions</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Languages Section -->
+        <section class="section">
+            <h2>70+ Languages Supported</h2>
+            <p class="section-subtitle">Generate natural speech in languages worldwide</p>
+            <div class="languages-grid">
+                <div class="language-badge">
+                    <div class="language-flag">🇺🇸</div>
+                    <div class="language-name">English</div>
+                </div>
+                <div class="language-badge">
+                    <div class="language-flag">🇪🇸</div>
+                    <div class="language-name">Spanish</div>
+                </div>
+                <div class="language-badge">
+                    <div class="language-flag">🇫🇷</div>
+                    <div class="language-name">French</div>
+                </div>
+                <div class="language-badge">
+                    <div class="language-flag">🇩🇪</div>
+                    <div class="language-name">German</div>
+                </div>
+                <div class="language-badge">
+                    <div class="language-flag">🇯🇵</div>
+                    <div class="language-name">Japanese</div>
+                </div>
+                <div class="language-badge">
+                    <div class="language-flag">🇨🇳</div>
+                    <div class="language-name">Chinese</div>
+                </div>
+                <div class="language-badge">
+                    <div class="language-flag">🇮🇹</div>
+                    <div class="language-name">Italian</div>
+                </div>
+                <div class="language-badge">
+                    <div class="language-flag">🇵🇹</div>
+                    <div class="language-name">Portuguese</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Models Section -->
+        <section class="section">
+            <h2>Advanced AI Models</h2>
+            <p class="section-subtitle">Choose the perfect model for your needs</p>
+            <div class="models-grid">
+                <div class="model-card">
+                    <h3>Eleven v3</h3>
+                    <p>Our most advanced model with emotional expression</p>
+                    <ul class="model-features">
+                        <li>70+ languages</li>
+                        <li>Dramatic delivery</li>
+                        <li>5,000 character limit</li>
+                        <li>Multi-speaker dialogue</li>
+                    </ul>
+                </div>
+                <div class="model-card">
+                    <h3>Multilingual v2</h3>
+                    <p>The most lifelike, emotionally rich model</p>
+                    <ul class="model-features">
+                        <li>29 languages</li>
+                        <li>Natural-sounding</li>
+                        <li>10,000 character limit</li>
+                        <li>Long-form content</li>
+                    </ul>
+                </div>
+                <div class="model-card">
+                    <h3>Flash v2.5</h3>
+                    <p>High quality with ultra-low latency</p>
+                    <ul class="model-features">
+                        <li>32 languages</li>
+                        <li>75ms latency</li>
+                        <li>40,000 character limit</li>
+                        <li>50% lower cost</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="section">
+            <h2>Global Impact</h2>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">5M+</div>
+                    <div class="stat-label">Words Generated Daily</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Voices Available</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">70+</div>
+                    <div class="stat-label">Languages Supported</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">1M+</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="section" style="text-align: center;">
+            <h2>Ready to Create Amazing Audio?</h2>
+            <p class="section-subtitle">Join millions of creators transforming text into expressive audio</p>
+            <div class="hero-buttons" style="justify-content: center;">
+                <button class="btn btn-primary" style="padding: 1.2rem 3rem; font-size: 1.1rem;" onclick="window.location.href='tts-demo.html'">Get Started Free</button>
+                <button class="btn btn-secondary" style="padding: 1.2rem 3rem; font-size: 1.1rem;" onclick="openTelegramBot()">Join Community</button>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-sections">
+                    <div class="footer-section">
+                        <h4>Product</h4>
+                        <a href="#text-to-speech">Text to Speech</a>
+                        <a href="#voice-library">Voice Library</a>
+                        <a href="#voice-cloning">Voice Cloning</a>
+                        <a href="#pricing">Pricing</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Solutions</h4>
+                        <a href="#gaming">Gaming</a>
+                        <a href="#audiobooks">Audiobooks</a>
+                        <a href="#podcasts">Podcasts</a>
+                        <a href="#accessibility">Accessibility</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Resources</h4>
+                        <a href="#docs">Documentation</a>
+                        <a href="#api">API Reference</a>
+                        <a href="#blog">Blog</a>
+                        <a href="#help">Help Center</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Company</h4>
+                        <a href="#about">About</a>
+                        <a href="#careers">Careers</a>
+                        <a href="#contact">Contact</a>
+                        <a href="#terms">Terms of Service</a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <div>© 2024 AI Voice Generator. All rights reserved.</div>
+                    <div>Made with ✨ for creators worldwide</div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Particle System Script -->
+    <script>
+        class StarfieldSystem {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.time = 0;
+                this.mouseX = this.canvas.width / 2;
+                this.mouseY = this.canvas.height / 2;
+                this.mouseRadius = 200;  // Increased from 150 for larger interaction area
+
+                this.resizeCanvas();
+                this.createParticles();
+                this.addEventListeners();
+                this.animate();
+            }
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            createParticles() {
+                // Create sparse starfield - fewer particles for subtle effect
+                const particleCount = Math.floor((this.canvas.width * this.canvas.height) / 20000);
+                for (let i = 0; i < particleCount; i++) {
+                    const size = Math.random();
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        radius: size < 0.7 ? 0.5 : (size < 0.9 ? 1 : 1.5),
+                        vx: (Math.random() - 0.5) * 1.0,  // Increased from 0.3 to 1.0
+                        vy: (Math.random() - 0.5) * 1.0,  // Increased from 0.3 to 1.0
+                        baseAlpha: Math.random() * 0.4 + 0.3,
+                        twinkleSpeed: Math.random() * 0.02 + 0.01,
+                        twinklePhase: Math.random() * Math.PI * 2,
+                        baseVx: 0,
+                        baseVy: 0
+                    });
+                }
+            }
+
+            addEventListeners() {
+                window.addEventListener('resize', () => {
+                    this.resizeCanvas();
+                });
+                
+                document.addEventListener('mousemove', (e) => {
+                    this.mouseX = e.clientX;
+                    this.mouseY = e.clientY;
+                });
+            }
+
+            update() {
+                this.time += 0.016; // ~60fps
+
+                this.particles.forEach(particle => {
+                    // Store base velocity
+                    if (particle.baseVx === 0 && particle.baseVy === 0) {
+                        particle.baseVx = particle.vx;
+                        particle.baseVy = particle.vy;
+                    }
+
+                    // Mouse interaction - particles accelerate away from mouse
+                    const dx = particle.x - this.mouseX;
+                    const dy = particle.y - this.mouseY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < this.mouseRadius) {
+                        const angle = Math.atan2(dy, dx);
+                        const force = (this.mouseRadius - distance) / this.mouseRadius;
+                        particle.vx = particle.baseVx + Math.cos(angle) * force * 5;  // Increased from 3 to 5
+                        particle.vy = particle.baseVy + Math.sin(angle) * force * 5;  // Increased from 3 to 5
+                    } else {
+                        // Smoothly return to base velocity
+                        particle.vx += (particle.baseVx - particle.vx) * 0.05;
+                        particle.vy += (particle.baseVy - particle.vy) * 0.05;
+                    }
+
+                    // Apply movement
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+
+                    // Wrap around edges
+                    if (particle.x < 0) particle.x = this.canvas.width;
+                    if (particle.x > this.canvas.width) particle.x = 0;
+                    if (particle.y < 0) particle.y = this.canvas.height;
+                    if (particle.y > this.canvas.height) particle.y = 0;
+
+                    // Subtle twinkling effect
+                    particle.twinklePhase += particle.twinkleSpeed;
+                    particle.alpha = particle.baseAlpha + Math.sin(particle.twinklePhase) * 0.15;
+                    particle.alpha = Math.max(0.1, Math.min(0.7, particle.alpha));
+                });
+            }
+
+            draw() {
+                // Clear canvas - keep background gradient
+                this.ctx.fillStyle = 'rgba(15, 12, 41, 0.02)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw stars
+                this.particles.forEach((particle) => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = '#ffffff';
+                    this.ctx.globalAlpha = particle.alpha;
+                    this.ctx.fill();
+                    
+                    // Add subtle glow to larger particles
+                    if (particle.radius > 0.8) {
+                        this.ctx.strokeStyle = '#ffffff';
+                        this.ctx.lineWidth = 0.5;
+                        this.ctx.globalAlpha = particle.alpha * 0.3;
+                        this.ctx.stroke();
+                    }
+                    
+                    this.ctx.globalAlpha = 1;
+                });
+            }
+
+            animate() {
+                this.update();
+                this.draw();
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Initialize starfield system
+        window.addEventListener('DOMContentLoaded', () => {
+            new StarfieldSystem('particleCanvas');
+
+            // Add fade-in animations to elements
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.feature-card, .use-case-item, .model-card, .language-badge').forEach(el => {
+                observer.observe(el);
+            });
+        });
+
+        // Parallax effect disabled - sections stay fixed during scroll
+
+        // TELEGRAM BOT INTEGRATION
+        // ========================
+        // To set up your own Telegram chatbot:
+        // 1. Go to Telegram and find @BotFather
+        // 2. Create a new bot and get your bot token
+        // 3. Get your Telegram username or channel link
+        // 4. Replace 'your_telegram_username' below with your actual bot username
+        //
+        // Examples:
+        // - Bot link: https://t.me/YourBotName
+        // - Channel: https://t.me/YourChannelName
+        // - Personal chat: https://t.me/your_username
+        //
+        function openTelegramBot() {
+            // 👇 REPLACE THIS WITH YOUR TELEGRAM BOT/CHANNEL LINK 👇
+            const telegramLink = 'https://t.me/your_telegram_username';
+            
+            // Check if the link has been updated
+            if (telegramLink.includes('your_telegram_username')) {
+                alert('Please configure your Telegram bot link in the code:\n1. Open index.html\n2. Find the openTelegramBot() function\n3. Replace "your_telegram_username" with your actual username');
+                return;
+            }
+            
+            window.open(telegramLink, '_blank');
+        }
+    </script>
+</body>
+</html>

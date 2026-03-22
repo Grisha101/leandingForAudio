@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - AI Voice Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #ffffff;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-login {
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-login:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-signup {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .section {
+            padding: 5rem 5%;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section h1 {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff, #e0e0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: #b0b0ff;
+            margin-bottom: 3rem;
+            max-width: 800px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .price-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            padding: 2.5rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .price-card:hover {
+            background: rgba(102, 126, 234, 0.15);
+            border-color: rgba(102, 126, 234, 0.8);
+            transform: translateY(-5px);
+        }
+
+        .price-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin: 1rem 0;
+        }
+
+        .price-desc {
+            color: #b0b0ff;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .features-list li {
+            padding: 0.7rem 0;
+            color: #b0b0ff;
+            font-size: 0.9rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .features-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            padding: 3rem 5%;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2);
+            color: #888;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem 4%;
+            }
+
+            .section {
+                padding: 3rem 4%;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="content-wrapper">
+        <nav>
+            <div class="logo" onclick="window.location.href='index.html'" style="cursor: pointer;">✨ AI Voice</div>
+            <div class="nav-buttons">
+                <button class="btn btn-login" onclick="window.location.href='https://t.me/your_chatbot_username'; return false;">Telegram Bot</button>
+                <button class="btn btn-signup" onclick="window.location.href='index.html'">Home</button>
+            </div>
+        </nav>
+
+        <section class="section">
+            <a class="back-link" onclick="window.location.href='index.html'">← Back to Home</a>
+            <h1>Simple, Transparent Pricing</h1>
+            <p class="section-subtitle">Choose the perfect plan for your needs. All plans include free starter credits.</p>
+
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <h3>Free</h3>
+                    <p class="price-desc">Perfect for getting started</p>
+                    <div class="price">$0<span style="font-size: 1rem; color: #b0b0ff;">/month</span></div>
+                    <ul class="features-list">
+                        <li>10,000 free characters/month</li>
+                        <li>Access to 500+ voices</li>
+                        <li>Basic support</li>
+                        <li>2 projects</li>
+                    </ul>
+                    <button class="btn-primary" onclick="window.location.href='app.html'">Get Started</button>
+                </div>
+
+                <div class="price-card">
+                    <h3>Creator</h3>
+                    <p class="price-desc">For content creators</p>
+                    <div class="price">$11<span style="font-size: 1rem; color: #b0b0ff;">/month</span></div>
+                    <ul class="features-list">
+                        <li>250,000 characters/month</li>
+                        <li>Access to 10,000+ voices</li>
+                        <li>Voice cloning (1 voice)</li>
+                        <li>Priority support</li>
+                        <li>20 projects</li>
+                    </ul>
+                    <button class="btn-primary" onclick="window.location.href='https://t.me/your_chatbot_username'; return false;">Subscribe Now</button>
+                </div>
+
+                <div class="price-card">
+                    <h3>Professional</h3>
+                    <p class="price-desc">For professionals & studios</p>
+                    <div class="price">$99<span style="font-size: 1rem; color: #b0b0ff;">/month</span></div>
+                    <ul class="features-list">
+                        <li>3,000,000 characters/month</li>
+                        <li>Unlimited voices</li>
+                        <li>Voice cloning (5 voices)</li>
+                        <li>Multi-speaker dialogue</li>
+                        <li>API access</li>
+                        <li>Dedicated support</li>
+                    </ul>
+                    <button class="btn-primary" onclick="window.location.href='https://t.me/your_chatbot_username'; return false;">Subscribe Now</button>
+                </div>
+
+                <div class="price-card">
+                    <h3>Enterprise</h3>
+                    <p class="price-desc">Custom solutions</p>
+                    <div class="price">Custom</div>
+                    <ul class="features-list">
+                        <li>Unlimited characters</li>
+                        <li>Custom integrations</li>
+                        <li>Dedicated infrastructure</li>
+                        <li>SLA & compliance</li>
+                        <li>24/7 support</li>
+                        <li>Custom training</li>
+                    </ul>
+                    <button class="btn-primary" onclick="window.location.href='https://t.me/your_chatbot_username'; return false;">Contact Sales</button>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>© 2024 AI Voice Generator. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Particle system (same as main page)
+        class StarfieldSystem {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.time = 0;
+                this.mouseX = this.canvas.width / 2;
+                this.mouseY = this.canvas.height / 2;
+                this.mouseRadius = 150;
+
+                this.resizeCanvas();
+                this.createParticles();
+                this.addEventListeners();
+                this.animate();
+            }
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            createParticles() {
+                const particleCount = Math.floor((this.canvas.width * this.canvas.height) / 20000);
+                for (let i = 0; i < particleCount; i++) {
+                    const size = Math.random();
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        radius: size < 0.7 ? 0.5 : (size < 0.9 ? 1 : 1.5),
+                        vx: (Math.random() - 0.5) * 0.3,
+                        vy: (Math.random() - 0.5) * 0.3,
+                        baseAlpha: Math.random() * 0.4 + 0.3,
+                        twinkleSpeed: Math.random() * 0.02 + 0.01,
+                        twinklePhase: Math.random() * Math.PI * 2,
+                        baseVx: 0,
+                        baseVy: 0
+                    });
+                }
+            }
+
+            addEventListeners() {
+                window.addEventListener('resize', () => this.resizeCanvas());
+                document.addEventListener('mousemove', (e) => {
+                    this.mouseX = e.clientX;
+                    this.mouseY = e.clientY;
+                });
+            }
+
+            update() {
+                this.time += 0.016;
+                this.particles.forEach(particle => {
+                    if (particle.baseVx === 0 && particle.baseVy === 0) {
+                        particle.baseVx = particle.vx;
+                        particle.baseVy = particle.vy;
+                    }
+
+                    const dx = particle.x - this.mouseX;
+                    const dy = particle.y - this.mouseY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < this.mouseRadius) {
+                        const angle = Math.atan2(dy, dx);
+                        const force = (this.mouseRadius - distance) / this.mouseRadius;
+                        particle.vx = particle.baseVx + Math.cos(angle) * force * 3;
+                        particle.vy = particle.baseVy + Math.sin(angle) * force * 3;
+                    } else {
+                        particle.vx += (particle.baseVx - particle.vx) * 0.05;
+                        particle.vy += (particle.baseVy - particle.vy) * 0.05;
+                    }
+
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+
+                    if (particle.x < 0) particle.x = this.canvas.width;
+                    if (particle.x > this.canvas.width) particle.x = 0;
+                    if (particle.y < 0) particle.y = this.canvas.height;
+                    if (particle.y > this.canvas.height) particle.y = 0;
+
+                    particle.twinklePhase += particle.twinkleSpeed;
+                    particle.alpha = particle.baseAlpha + Math.sin(particle.twinklePhase) * 0.15;
+                    particle.alpha = Math.max(0.1, Math.min(0.7, particle.alpha));
+                });
+            }
+
+            draw() {
+                this.ctx.fillStyle = 'rgba(15, 12, 41, 0.02)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.particles.forEach((particle) => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = '#ffffff';
+                    this.ctx.globalAlpha = particle.alpha;
+                    this.ctx.fill();
+                    
+                    if (particle.radius > 0.8) {
+                        this.ctx.strokeStyle = '#ffffff';
+                        this.ctx.lineWidth = 0.5;
+                        this.ctx.globalAlpha = particle.alpha * 0.3;
+                        this.ctx.stroke();
+                    }
+                    
+                    this.ctx.globalAlpha = 1;
+                });
+            }
+
+            animate() {
+                this.update();
+                this.draw();
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            new StarfieldSystem('particleCanvas');
+        });
+    </script>
+</body>
+</html>

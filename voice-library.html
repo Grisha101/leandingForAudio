@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Library - AI Voice Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #ffffff;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* Particle Canvas Background */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .logo:hover {
+            opacity: 0.8;
+        }
+
+        nav a {
+            color: #ffffff;
+            text-decoration: none;
+            margin: 0 1.5rem;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #667eea;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-login {
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-login:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-signup {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 5%;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff, #e0e0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: #b0b0ff;
+            margin-bottom: 2rem;
+        }
+
+        .filter-section {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.6rem 1.2rem;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: rgba(102, 126, 234, 0.5);
+            border-color: #667eea;
+        }
+
+        .voices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .voice-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .voice-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateY(-5px);
+        }
+
+        .voice-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .voice-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .voice-type {
+            display: inline-block;
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .voice-description {
+            color: #b0b0ff;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .voice-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-tag {
+            background: rgba(255, 255, 255, 0.05);
+            color: #a0a0cc;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .voice-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 0.6rem;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            color: #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .action-btn:hover {
+            background: rgba(102, 126, 234, 0.4);
+        }
+
+        .search-box {
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .search-input::placeholder {
+            color: #888;
+        }
+
+        /* Footer */
+        footer {
+            padding: 2rem 5%;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2);
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav a {
+                margin: 0 0.5rem;
+            }
+
+            .voices-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Canvas -->
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="content-wrapper">
+        <!-- Navigation -->
+        <nav>
+            <a href="index.html" class="logo">✨ AI Voice</a>
+            <div style="display: flex; gap: 2rem;">
+                <a href="index.html">Home</a>
+                <a href="tts-demo.html">TTS Demo</a>
+                <a href="voice-library.html">Voice Library</a>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn btn-login">Log In</button>
+                <button class="btn btn-signup">Sign Up</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container">
+            <h1 class="page-title">🎙️ Voice Library</h1>
+            <p class="page-subtitle">Explore our collection of 10,000+ AI voices for any use case</p>
+
+            <!-- Search -->
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search voices by name or type...">
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-section">
+                <button class="filter-btn active" onclick="filterVoices('all')">All Voices</button>
+                <button class="filter-btn" onclick="filterVoices('narration')">Narration</button>
+                <button class="filter-btn" onclick="filterVoices('conversational')">Conversational</button>
+                <button class="filter-btn" onclick="filterVoices('character')">Characters</button>
+                <button class="filter-btn" onclick="filterVoices('social-media')">Social Media</button>
+                <button class="filter-btn" onclick="filterVoices('advertisement')">Advertisement</button>
+            </div>
+
+            <!-- Voices Grid -->
+            <div class="voices-grid" id="voicesGrid"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>© 2024 AI Voice Generator. All rights reserved. | <a href="index.html" style="color: #667eea; text-decoration: none;">Back to Home</a></p>
+        </footer>
+    </div>
+
+    <!-- Particle System Script -->
+    <script>
+        class StarfieldSystem {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.time = 0;
+
+                this.resizeCanvas();
+                this.createParticles();
+                this.addEventListeners();
+                this.animate();
+            }
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            createParticles() {
+                const particleCount = Math.floor((this.canvas.width * this.canvas.height) / 20000);
+                for (let i = 0; i < particleCount; i++) {
+                    const size = Math.random();
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        radius: size < 0.7 ? 0.5 : (size < 0.9 ? 1 : 1.5),
+                        vx: (Math.random() - 0.5) * 0.3,
+                        vy: (Math.random() - 0.5) * 0.3,
+                        baseAlpha: Math.random() * 0.4 + 0.3,
+                        twinkleSpeed: Math.random() * 0.02 + 0.01,
+                        twinklePhase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            addEventListeners() {
+                window.addEventListener('resize', () => this.resizeCanvas());
+                document.addEventListener('mousemove', (e) => {
+                    const mouseX = e.clientX;
+                    const mouseY = e.clientY;
+                    this.particles.forEach(particle => {
+                        const dx = particle.x - mouseX;
+                        const dy = particle.y - mouseY;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const minDistance = 120;
+                        if (distance < minDistance) {
+                            const angle = Math.atan2(dy, dx);
+                            const force = (minDistance - distance) / minDistance;
+                            particle.vx += Math.cos(angle) * force * 1.5;
+                            particle.vy += Math.sin(angle) * force * 1.5;
+                        }
+                    });
+                });
+            }
+
+            update() {
+                this.time += 0.016;
+                this.particles.forEach(particle => {
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+
+                    if (particle.x < 0) particle.x = this.canvas.width;
+                    if (particle.x > this.canvas.width) particle.x = 0;
+                    if (particle.y < 0) particle.y = this.canvas.height;
+                    if (particle.y > this.canvas.height) particle.y = 0;
+
+                    particle.vx *= 0.98;
+                    particle.vy *= 0.98;
+
+                    particle.twinklePhase += particle.twinkleSpeed;
+                    particle.alpha = particle.baseAlpha + Math.sin(particle.twinklePhase) * 0.15;
+                    particle.alpha = Math.max(0.1, Math.min(0.7, particle.alpha));
+                });
+            }
+
+            draw() {
+                this.ctx.fillStyle = 'rgba(15, 12, 41, 0.02)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.particles.forEach((particle) => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = '#ffffff';
+                    this.ctx.globalAlpha = particle.alpha;
+                    this.ctx.fill();
+
+                    if (particle.radius > 0.8) {
+                        this.ctx.strokeStyle = '#ffffff';
+                        this.ctx.lineWidth = 0.5;
+                        this.ctx.globalAlpha = particle.alpha * 0.3;
+                        this.ctx.stroke();
+                    }
+
+                    this.ctx.globalAlpha = 1;
+                });
+            }
+
+            animate() {
+                this.update();
+                this.draw();
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Voice data
+        const voices = [
+            { id: 1, name: 'Adam', type: 'narration', emoji: '🎙️', description: 'Deep, professional narrator voice', features: ['Professional', 'Calm', 'Clear'] },
+            { id: 2, name: 'Sarah', type: 'conversational', emoji: '👩', description: 'Natural, friendly conversation voice', features: ['Friendly', 'Natural', 'Warm'] },
+            { id: 3, name: 'James', type: 'character', emoji: '🤖', description: 'Character voice for gaming', features: ['Dynamic', 'Engaging', 'Expressive'] },
+            { id: 4, name: 'Luna', type: 'social-media', emoji: '✨', description: 'Trendy voice for short content', features: ['Modern', 'Upbeat', 'Catchy'] },
+            { id: 5, name: 'Alex', type: 'advertisement', emoji: '📢', description: 'Persuasive commercial voice', features: ['Persuasive', 'Strong', 'Confident'] },
+            { id: 6, name: 'Emma', type: 'narration', emoji: '📚', description: 'Elegant narration for storytelling', features: ['Eloquent', 'Smooth', 'Engaging'] },
+            { id: 7, name: 'Marcus', type: 'conversational', emoji: '👨', description: 'Casual conversation partner', features: ['Relaxed', 'Friendly', 'Approachable'] },
+            { id: 8, name: 'Zara', type: 'character', emoji: '🎭', description: 'Playful character for animation', features: ['Playful', 'Youthful', 'Fun'] },
+            { id: 9, name: 'Nova', type: 'social-media', emoji: '🌟', description: 'Energetic content creator voice', features: ['Energetic', 'Confident', 'Viral'] },
+            { id: 10, name: 'Victor', type: 'advertisement', emoji: '🏆', description: 'Authoritative brand voice', features: ['Authority', 'Trustworthy', 'Premium'] },
+        ];
+
+        let currentFilter = 'all';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            new StarfieldSystem('particleCanvas');
+            renderVoices(voices);
+
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchVoices(e.target.value);
+            });
+        });
+
+        function renderVoices(voicesToShow) {
+            const grid = document.getElementById('voicesGrid');
+            grid.innerHTML = '';
+
+            voicesToShow.forEach(voice => {
+                const card = document.createElement('div');
+                card.className = 'voice-card';
+                card.innerHTML = `
+                    <div class="voice-avatar">${voice.emoji}</div>
+                    <div class="voice-name">${voice.name}</div>
+                    <div class="voice-type">${voice.type.replace('-', ' ')}</div>
+                    <div class="voice-description">${voice.description}</div>
+                    <div class="voice-features">
+                        ${voice.features.map(f => `<span class="feature-tag">${f}</span>`).join('')}
+                    </div>
+                    <div class="voice-actions">
+                        <button class="action-btn" onclick="playVoice(${voice.id})">▶️ Preview</button>
+                        <button class="action-btn" onclick="cloneVoice(${voice.id})">🎯 Use</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterVoices(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const filtered = type === 'all' ? voices : voices.filter(v => v.type === type);
+            renderVoices(filtered);
+        }
+
+        function searchVoices(query) {
+            const filtered = voices.filter(v => 
+                v.name.toLowerCase().includes(query.toLowerCase()) ||
+                v.description.toLowerCase().includes(query.toLowerCase())
+            );
+            renderVoices(filtered);
+        }
+
+        function playVoice(voiceId) {
+            const voice = voices.find(v => v.id === voiceId);
+            alert('Playing preview of ' + voice.name + '...\n\nIn a real app, this would play an audio preview.');
+        }
+
+        function cloneVoice(voiceId) {
+            const voice = voices.find(v => v.id === voiceId);
+            window.location.href = 'tts-demo.html?voice=' + voice.id;
+        }
+    </script>
+</body>
+</html>
