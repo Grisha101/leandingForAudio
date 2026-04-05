@@ -291,7 +291,7 @@ if __name__ == "__main__":
     # Create and launch interface
     demo = create_gradio_interface()
     demo.launch(
-        server_name="0.0.0.0",
+        server_name="localhost",
         server_port=7860,
         share=True,  # Generate public URL
         show_error=True
